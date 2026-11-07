@@ -1,0 +1,32 @@
+# PintsNow BETA: builds TuNeLA/Beer-map branch big-update (public repo, read-only, no secret needed) and deploys it to
+# GitHub Pages of THIS repo (https://tunela.github.io/pintsnow-beta/). The live app (Beer-map main /docs) is never touched.
+name: beta
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "17,47 * * * *"   # every 30 min: picks up new commits on big-update
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency: { group: beta-pages, cancel-in-progress: true }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs: { sha: "${{ steps.app.outputs.sha }}" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: { repository: TuNeLA/Beer-map, ref: big-update, path: app, fetch-depth: 1 }
+      - id: app
+        run: echo "sha=$(git -C app rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - run: python3 beta/transform.py app/docs _site "${{ steps.app.outputs.sha }}"
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: _site }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4
