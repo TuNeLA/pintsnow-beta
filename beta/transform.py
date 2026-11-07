@@ -10,6 +10,25 @@ src, out, sha = sys.argv[1], sys.argv[2], (sys.argv[3] if len(sys.argv) > 3 else
 if os.path.exists(out): shutil.rmtree(out)
 shutil.copytree(src, out)
 p = os.path.join(out, "index.html"); s = open(p, encoding="utf-8").read()
+# pnds: stamp like stamp-version.yml (every local js/css ?v=<sha256[:10]>, sw.js VERSION = hash of the app files)
+import hashlib
+def _h(fp): return hashlib.sha256(open(fp, "rb").read()).hexdigest()[:10]
+def _stamp(m):
+    f = m.group(2); fp = os.path.join(out, f)
+    return m.group(1) + f + ("?v=" + _h(fp) if os.path.isfile(fp) else (m.group(3) or "")) + '"'
+s = re.sub(r'((?:src|href)="\./)([^"?]+\.(?:js|css))(\?v=[^"]*)?"', _stamp, s)
+_all = hashlib.sha256()
+for dp, dn, fn in sorted(os.walk(out)):
+    dn.sort()
+    for f in sorted(fn):
+        rel = os.path.relpath(os.path.join(dp, f), out)
+        if rel in ("sw.js", "index.html", "bars.json", "places.json") or rel.startswith(("places/", "buildings/", "buildings3d/")): continue
+        _all.update(rel.encode() + b"\0" + open(os.path.join(dp, f), "rb").read())
+_sw = os.path.join(out, "sw.js")
+if os.path.exists(_sw):
+    _t = open(_sw, encoding="utf-8").read()
+    _t = re.sub(r'^var VERSION = "[^"]*";', 'var VERSION = "olnu-b%s";' % _all.hexdigest()[:9], _t, count=1, flags=re.M)
+    open(_sw, "w", encoding="utf-8").write(_t)
 s = re.sub(r'\s*<link[^>]+rel="manifest"[^>]*>', "", s)                       # not installable
 s = re.sub(r"<title>(?!BETA)", "<title>BETA · ", s, count=1)
 head = ('<meta name="robots" content="noindex,nofollow">\n'
