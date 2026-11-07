@@ -49,6 +49,6 @@ for f in ("manifest.webmanifest",):   # nothing links it any more; remove so no 
     try: os.remove(os.path.join(out, f))
     except FileNotFoundError: pass
 # the app's CSP allows only 'self' scripts: the beta setup is a file. It skips the first-visit "install the app" card.
-open(os.path.join(out, "beta.js"), "w").write('try{localStorage.setItem("olnu.inst1",String(Date.now()));localStorage.setItem("olnu.beta",%r)}catch(e){}\n' % sha)
+open(os.path.join(out, "beta.js"), "w").write('window.PN_BETA=%r;try{localStorage.setItem("olnu.inst1",String(Date.now()));localStorage.setItem("olnu.beta",%r)}catch(e){}\n' % (sha, sha))
 open(os.path.join(out, ".nojekyll"), "w").close()
 print("beta build ok", sha)
