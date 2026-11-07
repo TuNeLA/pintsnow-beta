@@ -23,6 +23,8 @@ if 'name="robots"' not in s:   # after <meta charset> (must stay in the first by
     s = s[:at] + head + s[at:]
 badge = '<div id="olnu-beta" aria-hidden="true">BETA' + (" " + html.escape(sha) if sha else "") + "</div>"
 if 'id="olnu-beta"' not in s: s = re.sub(r"(<body[^>]*>)", r"\1\n" + badge, s, count=1)
+s = s.replace("https://tunela.github.io/Beer-map/docs/", "https://tunela.github.io/pintsnow-beta/")   # link preview shows the beta's own new image
+s = re.sub(r'(og-image\.png)(\?v=[^"]*)?"', r'\1?v=pn1"', s)   # new URL = chat apps fetch the new PintsNow image, not a cached old one
 open(p, "w", encoding="utf-8").write(s)
 for f in ("manifest.webmanifest",):   # nothing links it any more; remove so no store / browser picks it up
     try: os.remove(os.path.join(out, f))
