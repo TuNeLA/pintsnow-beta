@@ -3,6 +3,7 @@
 name: beta
 on:
   workflow_dispatch: {}
+  push: { branches: [main] }   # Claude pushes a "rebuild" commit here after each big-update commit (GitHub cron is unreliable on new repos)
   schedule:
     - cron: "17,47 * * * *"   # every 30 min: picks up new commits on big-update
 permissions:
