@@ -89,6 +89,9 @@ if os.path.exists(_sw) and not STAGING:
                         _t, count=1)
         if not n: print("transform: WARNING sw.js anchor not found; the beta worker may answer for /test/ on a first visit")
         wr(_sw, _t)
+    # left-sw-shell: the beta has no manifest.webmanifest (removed below); a SHELL file that 404s fails the whole worker install
+    _t = rd(_sw)
+    if '"./manifest.webmanifest", ' in _t: wr(_sw, _t.replace('"./manifest.webmanifest", ', '', 1))
 _all = hashlib.sha256()
 for dp, dn, fn in sorted(os.walk(out)):
     dn.sort()

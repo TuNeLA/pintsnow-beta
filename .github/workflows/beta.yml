@@ -29,6 +29,22 @@ jobs:
           else
             echo "big-update has no testenv/ yet: no /test/ build"
           fi
+      # left T-25: serve the beta bundled (like the live "Pages (bundled)" build): ~135 scripts → 3 files, 51 stylesheets → 1.
+      # Off: repo variable BETA_BUNDLE = off. Runs after transform.py (it stamps first; bundle.mjs --stamp re-stamps).
+      - uses: actions/setup-node@v4
+        if: ${{ vars.BETA_BUNDLE != 'off' }}
+        with: { node-version: 22 }
+      - name: bundle the beta + the /test/ build (scripts/bundle.mjs, esbuild)
+        if: ${{ vars.BETA_BUNDLE != 'off' }}
+        run: |
+          set -eu
+          if ! grep -q -- '--stamp' app/scripts/bundle.mjs 2>/dev/null; then echo "big-update has no bundle.mjs --stamp yet: beta stays unbundled"; exit 0; fi
+          mkdir -p "$RUNNER_TEMP/bnd" && cp app/scripts/bundle.mjs "$RUNNER_TEMP/bnd/"
+          npm install --prefix "$RUNNER_TEMP/bnd" --no-save --no-package-lock --no-audit --no-fund esbuild@0.24.0 acorn@8.12.1
+          node "$RUNNER_TEMP/bnd/bundle.mjs" _site --stamp
+          if [ -f _site/test/index.html ]; then node "$RUNNER_TEMP/bnd/bundle.mjs" _site/test --stamp; fi
+          for f in _site/js/app.bundle*.js _site/test/js/app.bundle*.js; do [ -f "$f" ] && node --check "$f"; done
+          grep -c 'app\.bundle' _site/index.html
       - name: the normal beta has no test panel
         run: |
           set -eu
