@@ -69,8 +69,8 @@ else:
 p = os.path.join(out, "index.html"); s = rd(p)
 if STAGING:
     if 'src="./js/testbar.js' not in s:
-        s, n = re.subn(r'(<script\b[^>]*\bsrc="\./app\.js)', '<script defer src="./js/testbar.js"></script>\n\\1', s, count=1)
-        if not n: sys.exit("transform: app.js <script> not found")
+        s, n = re.subn(r'(<script\b[^>]*\bsrc="\./(?:js/app-core|app)\.js)', '<script defer src="./js/testbar.js"></script>\n\\1', s, count=1)
+        if not n: sys.exit("transform: app-core.js / app.js <script> not found")
     if 'href="./testbar.css' not in s:
         s = re.sub(r"(</head>)", '<link rel="stylesheet" href="./testbar.css">\n\\1', s, count=1)
 # pnds: stamp like stamp-version.yml (every local js/css ?v=<sha256[:10]>, sw.js VERSION = hash of the app files)
