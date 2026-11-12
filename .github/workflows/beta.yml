@@ -39,7 +39,7 @@ jobs:
         run: |
           set -eu
           if ! grep -q -- '--stamp' app/scripts/bundle.mjs 2>/dev/null; then echo "big-update has no bundle.mjs --stamp yet: beta stays unbundled"; exit 0; fi
-          mkdir -p "$RUNNER_TEMP/bnd" && cp app/scripts/bundle.mjs "$RUNNER_TEMP/bnd/"
+          mkdir -p "$RUNNER_TEMP/bnd" && cp app/scripts/bundle.mjs "$RUNNER_TEMP/bnd/" && { [ -f app/scripts/stamp.mjs ] && cp app/scripts/stamp.mjs "$RUNNER_TEMP/bnd/" || true; }
           npm install --prefix "$RUNNER_TEMP/bnd" --no-save --no-package-lock --no-audit --no-fund esbuild@0.24.0 acorn@8.12.1
           node "$RUNNER_TEMP/bnd/bundle.mjs" _site --stamp
           if [ -f _site/test/index.html ]; then node "$RUNNER_TEMP/bnd/bundle.mjs" _site/test --stamp; fi

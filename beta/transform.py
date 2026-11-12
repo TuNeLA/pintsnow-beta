@@ -152,4 +152,8 @@ else:
         for f in fn:
             if f in ("testenv.js", "testbar.js", "testbar.css"): sys.exit("transform: test file in the normal beta: " + f)
 open(os.path.join(out, ".nojekyll"), "w").close()
+import subprocess   # A1 (w1-build): one stamper = the app repo's scripts/stamp.mjs; runs last, after index.html + sw.js are final
+_st = os.path.join(os.path.dirname(os.path.abspath(src.rstrip("/"))), "scripts", "stamp.mjs")   # src = <app>/docs -> <app>/scripts/stamp.mjs
+if os.path.isfile(_st):
+    subprocess.run(["node", _st, out, "--prefix", "olnu-t-" if STAGING else "olnu-b-"], check=True)
 print(("staging test" if STAGING else "beta") + " build ok", sha)
